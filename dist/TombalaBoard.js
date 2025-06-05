@@ -1,13 +1,7 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useState } from "react";
 import { Grid, Paper, Typography, Box } from "@mui/material";
-/**
- * Basit bir 3×9 Tombala kartı bileşeni.
- * Her satırda 5 rastgele sayı yer alır, geri kalan hücreler boş (null).
- * Hücreler tıklanınca “işaretlenir” (marked: true).
- */
 export function TombalaBoard() {
-    // 1..90 arasında 15 benzersiz sayı üretir:
     const generateNumbers = () => {
         const nums = [];
         while (nums.length < 15) {
@@ -19,18 +13,16 @@ export function TombalaBoard() {
     };
     const [board, setBoard] = useState([]);
     useEffect(() => {
-        const nums = generateNumbers(); // Örneğin [3, 7, 15, … 88]
+        const nums = generateNumbers();
         const matrix = [];
         let idx = 0;
         for (let row = 0; row < 3; row++) {
             const rowNums = nums.slice(idx, idx + 5);
             idx += 5;
-            // 9 hücreli satır, başta hepsi boş (null) ve işaretlenmemiş (false):
             const cells = Array.from({ length: 9 }).map(() => ({
                 value: null,
                 marked: false,
             }));
-            // Rastgele 5 pozisyon seç ve sayıları yerleştir:
             const positions = [];
             while (positions.length < 5) {
                 const p = Math.floor(Math.random() * 9);
@@ -44,7 +36,6 @@ export function TombalaBoard() {
         }
         setBoard(matrix);
     }, []);
-    // Hücre tıklanınca onay işaretini (marked) toggle et:
     const handleCellClick = (r, c) => {
         setBoard((prev) => prev.map((row, ri) => row.map((cell, ci) => {
             if (ri === r && ci === c && cell.value !== null) {
@@ -53,7 +44,6 @@ export function TombalaBoard() {
             return cell;
         })));
     };
-    // Hücre stilini MUI sx üzerinden ayarla:
     const cellStyle = (cell) => ({
         height: 40,
         width: 40,

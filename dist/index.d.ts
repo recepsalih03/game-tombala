@@ -1,0 +1,1 @@
+export { TombalaBoard } from "./TombalaBoard";

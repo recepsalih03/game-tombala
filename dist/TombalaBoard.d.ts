@@ -3,6 +3,7 @@ interface TombalaBoardProps {
     socket: Socket | null;
     lobbyId: string;
     username: string | null;
+    gameState: any;
 }
-export declare function TombalaBoard({ socket, lobbyId, username }: TombalaBoardProps): import("react/jsx-runtime").JSX.Element;
+export declare function TombalaBoard({ socket, lobbyId, username, gameState }: TombalaBoardProps): import("react/jsx-runtime").JSX.Element;
 export {};

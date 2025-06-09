@@ -11,12 +11,12 @@ interface TombalaBoardProps {
   socket: Socket | null;
   lobbyId: string;
   username: string | null;
+  gameState: any;
 }
 
-export function TombalaBoard({ socket, lobbyId, username }: TombalaBoardProps) {
+export function TombalaBoard({ socket, lobbyId, username, gameState }: TombalaBoardProps) {
   const [board, setBoard] = useState<Cell[][]>([]);
   const [drawnNumbers, setDrawnNumbers] = useState<Set<number>>(new Set());
-  const [gameState, setGameState] = useState<any>(null);
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifMsg, setNotifMsg] = useState("");
 
@@ -47,19 +47,24 @@ export function TombalaBoard({ socket, lobbyId, username }: TombalaBoardProps) {
 
   useEffect(() => {
     if (!socket) return;
-    socket.emit('join_game_room', lobbyId);
-    const handleGameStateUpdate = (state: any) => setGameState(state);
-    socket.on('game_state_update', handleGameStateUpdate);
+    const handleNumberDrawn = (data: { lobbyId: string; number: number }) => {
+      if (data.lobbyId === lobbyId) {
+        setDrawnNumbers(prev => new Set(prev).add(data.number));
+      }
+    };
+    socket.on('tombala_number_drawn', handleNumberDrawn);
     return () => {
-      socket.off('game_state_update', handleGameStateUpdate);
+      socket.off('tombala_number_drawn', handleNumberDrawn);
     };
   }, [socket, lobbyId]);
 
   const handleDrawNumber = () => {
+    if (!socket) return;
     const available = Array.from({ length: 90 }, (_, i) => i + 1).filter(n => !drawnNumbers.has(n));
-    if (available.length === 0) return;
-    const num = available[Math.floor(Math.random() * available.length)];
-    setDrawnNumbers(prev => new Set(prev).add(num));
+    if (!available.length) return;
+    const number = available[Math.floor(Math.random() * available.length)];
+    socket.emit('tombala_number_drawn', { lobbyId, number });
+    setDrawnNumbers(prev => new Set(prev).add(number));
   };
 
   const handleCellClick = (r: number, c: number) => {
@@ -71,29 +76,32 @@ export function TombalaBoard({ socket, lobbyId, username }: TombalaBoardProps) {
     })));
   };
 
-  const marksPerRow = board.map(row => row.filter(cell => cell.marked).length);
-  const canCinko1 = marksPerRow.some(count => count === 5);
-  const canCinko2 = marksPerRow.filter(count => count === 5).length >= 2;
-  const canTombala = board.flat().filter(cell => cell.marked).length === 15;
+  const canClaim = (type: 'cinko1' | 'cinko2' | 'tombala') => {
+    const flat = board.flat();
+    const markedCount = flat.filter(cell => cell.marked).length;
+    const rowCounts = board.map(row => row.filter(cell => cell.marked).length);
+    const cinkoCount = rowCounts.filter(c => c === 5).length;
+    if (type === 'cinko1') return cinkoCount >= 1 && !gameState?.cinko1;
+    if (type === 'cinko2') return cinkoCount >= 2 && !gameState?.cinko2;
+    if (type === 'tombala') return markedCount === 15 && !gameState?.tombala;
+    return false;
+  };
 
   const handleClaim = (type: 'cinko1' | 'cinko2' | 'tombala') => {
     if (socket && username) {
       socket.emit('claim_win', { lobbyId, username, claimType: type, board });
     }
-    const msgMap: Record<string,string> = {
-      cinko1: '1. Çinko!',
-      cinko2: '2. Çinko!',
-      tombala: 'Tombala!'
-    };
-    setNotifMsg(msgMap[type]);
+    const msgs = { cinko1: '1. Çinko!', cinko2: '2. Çinko!', tombala: 'Tombala!' };
+    setNotifMsg(msgs[type]);
     setNotifOpen(true);
   };
 
   const handleNotifClose = () => setNotifOpen(false);
 
   const cellStyle = (cell: Cell) => ({
-    height: 40, width: 40, display: 'flex', alignItems: 'center', justifyContent: 'center',
-    border: '1px solid #bbb', cursor: cell.value && drawnNumbers.has(cell.value) ? 'pointer' : 'default',
+    height: 40, width: 40,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    border: '1px solid #bbb', cursor: cell.value !== null && drawnNumbers.has(cell.value) ? 'pointer' : 'default',
     backgroundColor: cell.value === null ? '#f0f0f0' : cell.marked ? '#a5d6a7' : drawnNumbers.has(cell.value) ? '#90caf9' : '#fff'
   });
 
@@ -105,29 +113,25 @@ export function TombalaBoard({ socket, lobbyId, username }: TombalaBoardProps) {
         </Button>
       </Box>
       <Paper elevation={3} sx={{ p: 2, backgroundColor: '#fafafa' }}>
-        <Typography variant="h6" align="center" gutterBottom>
-          Tombala Kartınız
-        </Typography>
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(9, 40px)', gridTemplateRows: 'repeat(3, 40px)', gap: 1, justifyContent: 'center' }}>
-          {board.flatMap((row, ri) => row.map((cell, ci) => (
+        <Typography variant="h6" align="center">Tombala Kartınız</Typography>
+        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(9, 40px)', gridTemplateRows: 'repeat(3, 40px)', gap: 1, justifyContent: 'center', mt: 2 }}>
+          {board.map((row, ri) => row.map((cell, ci) => (
             <Box key={`${ri}-${ci}`} onClick={() => handleCellClick(ri, ci)} sx={cellStyle(cell)}>
-              {cell.value !== null && <Typography variant="body2" fontWeight={500}>{cell.value}</Typography>}
+              {cell.value !== null && <Typography fontSize={12}>{cell.value}</Typography>}
             </Box>
           )))}
         </Box>
-        <Typography variant="body2" sx={{ mt: 2 }}>
+        <Typography sx={{ mt: 2 }} fontSize={14}>
           Çekilen Sayılar: {Array.from(drawnNumbers).join(', ')}
         </Typography>
         <Stack direction="row" spacing={2} sx={{ mt: 2, justifyContent: 'center' }}>
-          <Button variant="contained" color="warning" onClick={() => handleClaim('cinko1')} disabled={!canCinko1}>1. ÇİNKO</Button>
-          <Button variant="contained" color="secondary" onClick={() => handleClaim('cinko2')} disabled={!canCinko2}>2. ÇİNKO</Button>
-          <Button variant="contained" color="error" onClick={() => handleClaim('tombala')} disabled={!canTombala}>TOMBALA</Button>
+          <Button variant="contained" color="warning" onClick={() => handleClaim('cinko1')} disabled={!canClaim('cinko1')}>1. ÇİNKO</Button>
+          <Button variant="contained" color="secondary" onClick={() => handleClaim('cinko2')} disabled={!canClaim('cinko2')}>2. ÇİNKO</Button>
+          <Button variant="contained" color="error" onClick={() => handleClaim('tombala')} disabled={!canClaim('tombala')}>TOMBALA</Button>
         </Stack>
       </Paper>
       <Snackbar open={notifOpen} autoHideDuration={3000} onClose={handleNotifClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <Alert onClose={handleNotifClose} severity="success" sx={{ width: '100%' }}>
-          {notifMsg}
-        </Alert>
+        <Alert onClose={handleNotifClose} severity="success" sx={{ width: '100%' }}>{notifMsg}</Alert>
       </Snackbar>
     </Box>
   );

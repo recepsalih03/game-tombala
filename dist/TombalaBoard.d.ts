@@ -1,1 +1,8 @@
-export declare function TombalaBoard(): import("react/jsx-runtime").JSX.Element;
+import { Socket } from "socket.io-client";
+interface TombalaBoardProps {
+    socket: Socket | null;
+    lobbyId: string;
+    username: string | null;
+}
+export declare function TombalaBoard({ socket, lobbyId, username }: TombalaBoardProps): import("react/jsx-runtime").JSX.Element;
+export {};

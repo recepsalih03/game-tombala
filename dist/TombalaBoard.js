@@ -1,7 +1,9 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import { useEffect, useState } from "react";
 import { Paper, Typography, Box, Button, Stack, Snackbar, Alert } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 export function TombalaBoard({ socket, lobbyId, username, gameState }) {
+    const theme = useTheme();
     const [board, setBoard] = useState([]);
     const [drawnNumbers, setDrawnNumbers] = useState(new Set());
     const [notifOpen, setNotifOpen] = useState(false);
@@ -47,7 +49,7 @@ export function TombalaBoard({ socket, lobbyId, username, gameState }) {
             socket.off('tombala_number_drawn', handleNumberDrawn);
         };
     }, [socket, lobbyId]);
-    // Draw number (always visible button)
+    // Draw number button
     const handleDrawNumber = () => {
         if (!socket)
             return;
@@ -90,11 +92,17 @@ export function TombalaBoard({ socket, lobbyId, username, gameState }) {
         setNotifOpen(true);
     };
     const handleNotifClose = () => setNotifOpen(false);
+    // Cell style using theme
     const cellStyle = (cell) => ({
-        height: 40, width: 40,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        border: '1px solid #bbb', cursor: cell.value !== null && drawnNumbers.has(cell.value) ? 'pointer' : 'default',
-        backgroundColor: cell.value === null ? '#f0f0f0' : cell.marked ? '#a5d6a7' : drawnNumbers.has(cell.value) ? '#90caf9' : '#fff'
+        height: 40,
+        width: 40,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        border: 1,
+        borderColor: 'divider',
+        cursor: cell.value !== null && drawnNumbers.has(cell.value) ? 'pointer' : 'default',
+        bgcolor: cell.value === null ? 'background.default' : cell.marked ? 'success.light' : drawnNumbers.has(cell.value) ? 'primary.light' : 'background.paper'
     });
-    return (_jsxs(Box, { sx: { p: 2 }, children: [_jsx(Box, { sx: { mb: 2, textAlign: 'center' }, children: _jsx(Button, { variant: "contained", onClick: handleDrawNumber, disabled: drawnNumbers.size >= 90, children: "Say\u0131 \u00C7ek" }) }), _jsxs(Paper, { elevation: 3, sx: { p: 2, backgroundColor: '#fafafa' }, children: [_jsx(Typography, { variant: "h6", align: "center", children: "Tombala Kart\u0131n\u0131z" }), _jsx(Box, { sx: { display: 'grid', gridTemplateColumns: 'repeat(9, 40px)', gridTemplateRows: 'repeat(3, 40px)', gap: 1, justifyContent: 'center', mt: 2 }, children: board.map((row, ri) => row.map((cell, ci) => (_jsx(Box, { onClick: () => handleCellClick(ri, ci), sx: cellStyle(cell), children: cell.value !== null && _jsx(Typography, { fontSize: 12, children: cell.value }) }, `${ri}-${ci}`)))) }), _jsxs(Typography, { sx: { mt: 2 }, fontSize: 14, children: ["\u00C7ekilen Say\u0131lar: ", Array.from(drawnNumbers).join(', ')] }), _jsxs(Stack, { direction: "row", spacing: 2, sx: { mt: 2, justifyContent: 'center' }, children: [_jsx(Button, { variant: "contained", color: "warning", onClick: () => handleClaim('cinko1'), disabled: !canClaim('cinko1'), children: "1. \u00C7\u0130NKO" }), _jsx(Button, { variant: "contained", color: "secondary", onClick: () => handleClaim('cinko2'), disabled: !canClaim('cinko2'), children: "2. \u00C7\u0130NKO" }), _jsx(Button, { variant: "contained", color: "error", onClick: () => handleClaim('tombala'), disabled: !canClaim('tombala'), children: "TOMBALA" })] })] }), _jsx(Snackbar, { open: notifOpen, autoHideDuration: 3000, onClose: handleNotifClose, anchorOrigin: { vertical: 'bottom', horizontal: 'center' }, children: _jsx(Alert, { onClose: handleNotifClose, severity: "success", sx: { width: '100%' }, children: notifMsg }) })] }));
+    return (_jsxs(Box, { sx: { p: 2 }, children: [_jsx(Box, { sx: { mb: 2, textAlign: 'center' }, children: _jsx(Button, { variant: "contained", onClick: handleDrawNumber, disabled: drawnNumbers.size >= 90, children: "Say\u0131 \u00C7ek" }) }), _jsxs(Paper, { elevation: 3, sx: { p: 2, bgcolor: 'background.paper' }, children: [_jsx(Typography, { variant: "h6", align: "center", children: "Tombala Kart\u0131n\u0131z" }), _jsx(Box, { sx: { display: 'grid', gridTemplateColumns: 'repeat(9, 40px)', gridTemplateRows: 'repeat(3, 40px)', gap: 1, justifyContent: 'center', mt: 2 }, children: board.map((row, ri) => row.map((cell, ci) => (_jsx(Box, { onClick: () => handleCellClick(ri, ci), sx: cellStyle(cell), children: cell.value !== null && _jsx(Typography, { fontSize: 12, children: cell.value }) }, `${ri}-${ci}`)))) }), _jsxs(Typography, { sx: { mt: 2 }, fontSize: 14, children: ["\u00C7ekilen Say\u0131lar: ", Array.from(drawnNumbers).join(', ')] }), _jsxs(Stack, { direction: "row", spacing: 2, sx: { mt: 2, justifyContent: 'center' }, children: [_jsx(Button, { variant: "contained", color: "warning", onClick: () => handleClaim('cinko1'), disabled: !canClaim('cinko1'), children: "1. \u00C7\u0130NKO" }), _jsx(Button, { variant: "contained", color: "secondary", onClick: () => handleClaim('cinko2'), disabled: !canClaim('cinko2'), children: "2. \u00C7\u0130NKO" }), _jsx(Button, { variant: "contained", color: "error", onClick: () => handleClaim('tombala'), disabled: !canClaim('tombala'), children: "TOMBALA" })] })] }), _jsx(Snackbar, { open: notifOpen, autoHideDuration: 3000, onClose: handleNotifClose, anchorOrigin: { vertical: 'bottom', horizontal: 'center' }, children: _jsx(Alert, { onClose: handleNotifClose, severity: "success", sx: { width: '100%' }, children: notifMsg }) })] }));
 }

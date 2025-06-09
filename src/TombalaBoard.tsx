@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Paper, Typography, Box, Button, Stack, Snackbar, Alert } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 import { Socket } from "socket.io-client";
 
 interface Cell {
@@ -15,6 +16,7 @@ interface TombalaBoardProps {
 }
 
 export function TombalaBoard({ socket, lobbyId, username, gameState }: TombalaBoardProps) {
+  const theme = useTheme();
   const [board, setBoard] = useState<Cell[][]>([]);
   const [drawnNumbers, setDrawnNumbers] = useState<Set<number>>(new Set());
   const [notifOpen, setNotifOpen] = useState(false);
@@ -99,10 +101,15 @@ export function TombalaBoard({ socket, lobbyId, username, gameState }: TombalaBo
   const handleNotifClose = () => setNotifOpen(false);
 
   const cellStyle = (cell: Cell) => ({
-    height: 40, width: 40,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    border: '1px solid #bbb', cursor: cell.value !== null && drawnNumbers.has(cell.value) ? 'pointer' : 'default',
-    backgroundColor: cell.value === null ? '#f0f0f0' : cell.marked ? '#a5d6a7' : drawnNumbers.has(cell.value) ? '#90caf9' : '#fff'
+    height: 40,
+    width: 40,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    border: 1,
+    borderColor: 'divider',
+    cursor: cell.value !== null && drawnNumbers.has(cell.value) ? 'pointer' : 'default',
+    bgcolor: cell.value === null ? 'background.default' : cell.marked ? 'success.light' : drawnNumbers.has(cell.value) ? 'primary.light' : 'background.paper'
   });
 
   return (
@@ -112,8 +119,10 @@ export function TombalaBoard({ socket, lobbyId, username, gameState }: TombalaBo
           Sayı Çek
         </Button>
       </Box>
-      <Paper elevation={3} sx={{ p: 2, backgroundColor: '#fafafa' }}>
-        <Typography variant="h6" align="center">Tombala Kartınız</Typography>
+      <Paper elevation={3} sx={{ p: 2, bgcolor: 'background.paper' }}>
+        <Typography variant="h6" align="center">
+          Tombala Kartınız
+        </Typography>
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(9, 40px)', gridTemplateRows: 'repeat(3, 40px)', gap: 1, justifyContent: 'center', mt: 2 }}>
           {board.map((row, ri) => row.map((cell, ci) => (
             <Box key={`${ri}-${ci}`} onClick={() => handleCellClick(ri, ci)} sx={cellStyle(cell)}>
@@ -131,7 +140,9 @@ export function TombalaBoard({ socket, lobbyId, username, gameState }: TombalaBo
         </Stack>
       </Paper>
       <Snackbar open={notifOpen} autoHideDuration={3000} onClose={handleNotifClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
-        <Alert onClose={handleNotifClose} severity="success" sx={{ width: '100%' }}>{notifMsg}</Alert>
+        <Alert onClose={handleNotifClose} severity="success" sx={{ width: '100%' }}>
+          {notifMsg}
+        </Alert>
       </Snackbar>
     </Box>
   );

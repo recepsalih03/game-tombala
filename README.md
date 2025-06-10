@@ -1,46 +1,25 @@
-# Getting Started with Create React App
+# Tombala Oyunu Paketi (`game-tombala`)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Bu paket, Game Center projesi için geliştirilmiş, yeniden kullanılabilir ve bağımsız bir Tombala oyunu React bileşeni içerir.
 
-## Available Scripts
+## ✨ Özellikler
 
-In the project directory, you can run:
+-   **Rastgele Kart Oluşturma:** Her oyun başlangıcında standart 3x9'luk bir Tombala kartını 15 rastgele numara ile oluşturur.
+-   **Gerçek Zamanlı Senkronizasyon:** Socket.IO üzerinden gelen `tombala_number_drawn` olayını dinleyerek, diğer oyuncular tarafından çekilen sayıları kendi kartında anlık olarak gösterir.
+-   **İnteraktif Oyun Alanı:**
+    -   Oyuncunun manuel olarak kendi kartındaki sayıları işaretlemesine ve işaretleri kaldırmasına olanak tanır.
+    -   Sadece çekilmiş sayılar işaretlenebilir.
+-   **Kazanma Mantığı:**
+    -   Karttaki işaretli sayılara göre "1. Çinko", "2. Çinko" ve "Tombala" butonlarını akıllı bir şekilde aktif/pasif hale getirir.
+    -   Kazanma iddialarını (`claim_win` olayı), doğrulanması için sunucuya gönderir.
+-   **Oyun Yönetimi:**
+    -   Çekilen sayıyı, diğer oyunculara yayınlanması için sunucuya iletir.
 
-### `npm start`
+## 📦 Kurulum
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Bu paket, ana projenin (`game-center`) bir parçasıdır. Kurulum için ana dizindeki `README.md` dosyasını takip edin.
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+game-center: https://github.com/recepsalih03/game-center
 
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+Paket içinde bir değişiklik yapıldığında, bu değişikliğin ana projeye yansıması için paketin yeniden derlenmesi gerekir:
+npm run build --workspace=game-tombala

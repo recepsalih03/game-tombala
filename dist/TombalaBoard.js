@@ -8,7 +8,6 @@ export function TombalaBoard({ socket, lobbyId, username, gameState }) {
     const [drawnNumbers, setDrawnNumbers] = useState(new Set());
     const [notifOpen, setNotifOpen] = useState(false);
     const [notifMsg, setNotifMsg] = useState("");
-    // Initialize 3x9 board with 15 random numbers
     useEffect(() => {
         const generateNumbers = () => {
             const nums = [];
@@ -35,7 +34,6 @@ export function TombalaBoard({ socket, lobbyId, username, gameState }) {
         }
         setBoard(matrix);
     }, []);
-    // Listen for server-drawn numbers
     useEffect(() => {
         if (!socket)
             return;
@@ -49,7 +47,6 @@ export function TombalaBoard({ socket, lobbyId, username, gameState }) {
             socket.off('tombala_number_drawn', handleNumberDrawn);
         };
     }, [socket, lobbyId]);
-    // Draw number button
     const handleDrawNumber = () => {
         if (!socket)
             return;
@@ -60,7 +57,6 @@ export function TombalaBoard({ socket, lobbyId, username, gameState }) {
         socket.emit('tombala_number_drawn', { lobbyId, number });
         setDrawnNumbers(prev => new Set(prev).add(number));
     };
-    // Toggle mark on user click
     const handleCellClick = (r, c) => {
         setBoard(prev => prev.map((row, ri) => row.map((cell, ci) => {
             if (ri === r && ci === c && cell.value !== null && drawnNumbers.has(cell.value)) {
@@ -69,7 +65,6 @@ export function TombalaBoard({ socket, lobbyId, username, gameState }) {
             return cell;
         })));
     };
-    // Claim logic
     const canClaim = (type) => {
         const flat = board.flat();
         const markedCount = flat.filter(cell => cell.marked).length;
@@ -87,12 +82,11 @@ export function TombalaBoard({ socket, lobbyId, username, gameState }) {
         if (socket && username) {
             socket.emit('claim_win', { lobbyId, username, claimType: type, board });
         }
-        const msgs = { cinko1: '1. Çinko talebiniz alındı!', cinko2: '2. Çinko talebiniz alındı!', tombala: 'Tombala talebiniz alındı!' };
+        const msgs = { cinko1: '1. Çinko!', cinko2: '2. Çinko!', tombala: 'Tombala!' };
         setNotifMsg(msgs[type]);
         setNotifOpen(true);
     };
     const handleNotifClose = () => setNotifOpen(false);
-    // Cell style using theme
     const cellStyle = (cell) => ({
         height: 40,
         width: 40,
